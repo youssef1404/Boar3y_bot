@@ -1,7 +1,250 @@
-<?xml version="1.0"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="robot">
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="Boar3y">
 
-    <!-- Example link -->
-    <link name="base_link"></link>
+  <!-- Properties -->
+  <xacro:property name="wheel_color" value="0.75294 0.75294 0.75294 1" />
+  <xacro:property name="free_wheel_color" value="0.89804 0.91765 0.92941 1" />
+  <xacro:property name="default_color" value="1 1 1 1" />
+  <xacro:property name="free_wheel_color" value="0.89804 0.91765 0.92941 1" />
+  <xacro:property name="magnet_color" value="0.79216 0.81961 0.93333 1" />
+  <xacro:property name="wooden_color" value="0.87 0.72 0.53 1" />  <!-- Wooden brown -->
+  <xacro:property name="blue_color" value="0.1 0.3 0.8 1" />       <!-- Deep blue -->
+  <xacro:property name="black_color" value="0.2 0.2 0.2 1" />      <!-- Dark black -->
+  <xacro:property name="magnet_blue" value="0.0 0.48 0.88 1" />    <!-- Bright blue -->
+  <xacro:property name="white_color" value="1.0 1.0 1.0 1" />      <!-- Pure white -->
+
+  <!-- Path property -->
+  <xacro:property name="mesh_path" value="package://boar3y_bot/meshes" />
+
+  <!-- Base Link -->
+  <link name="base_link">
+    <inertial>
+      <origin xyz="0.0011349 0.081254 0.036607" rpy="0 0 0" />
+      <mass value="0.12042" />
+      <inertia
+        ixx="0.00044957" ixy="9.3836E-15" ixz="-2.3066E-15"
+        iyy="0.00056493" iyz="-2.9829E-06" izz="0.00017291" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="${mesh_path}/base_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="${wooden_color}" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="${mesh_path}/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Wheel Macro -->
+  <xacro:macro name="wheel" params="prefix side_sign *origin">
+    <link name="${prefix}_wheel_link">
+      <inertial>
+        <origin xyz="0.7834 ${side_sign * 0.86121} ${side_sign * 1.245}" rpy="0 0 0" />
+        <mass value="0.063141" />
+        <inertia
+          ixx="1.6624E-05" ixy="${side_sign * -3.1381E-09}" ixz="${side_sign * -4.3451E-10}"
+          iyy="1.6633E-05" iyz="-1.332E-11" izz="1.7196E-05" />
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="${mesh_path}/${prefix}_wheel_link.STL" />
+        </geometry>
+        <material name="">
+          <color rgba="${blue_color}" />
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="${mesh_path}/${prefix}_wheel_link.STL" />
+        </geometry>
+      </collision>
+    </link>
+    <joint name="${prefix}_wheel_joint" type="fixed">
+      <xacro:insert_block name="origin" />
+      <parent link="base_link" />
+      <child link="${prefix}_wheel_link" />
+      <axis xyz="0 0 0" />
+    </joint>
+  </xacro:macro>
+
+  <!-- Mobile Link -->
+  <link name="mobile_link">
+    <inertial>
+      <origin xyz="-3.583E-09 1.7935E-10 0.005" rpy="0 0 0" />
+      <mass value="0.11795" />
+      <inertia
+        ixx="5.4432E-05" ixy="4.4397E-15" ixz="1.6904E-12"
+        iyy="0.00023996" iyz="-8.4617E-14" izz="0.00029243" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="${mesh_path}/mobile_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="${black_color}" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="${mesh_path}/mobile_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="mobile_joint" type="fixed">
+    <origin xyz="0 -0.17855 0.12213" rpy="2.0944 0 0" />
+    <parent link="base_link" />
+    <child link="mobile_link" />
+    <axis xyz="0 0 0" />
+  </joint>
+
+  <!-- Use wheel macro for left and right wheels -->
+  <xacro:wheel prefix="left" side_sign="1">
+    <origin xyz="1.3173 0.8509 -0.84871" rpy="-1.5708 0 -1.5708" />
+  </xacro:wheel>
+
+  <xacro:wheel prefix="right" side_sign="-1">
+    <origin xyz="-1.3173 -0.7159 -0.84871" rpy="1.5708 0 1.5708" />
+  </xacro:wheel>
+
+  <!-- Free Wheel -->
+  <link name="free__wheel_Link">
+    <inertial>
+      <origin xyz="-4.6399E-16 -6.9389E-18 -0.0077662" rpy="0 0 0" />
+      <mass value="0.03046" />
+      <inertia
+        ixx="2.2929E-06" ixy="1.1145E-21" ixz="6.9529E-21"
+        iyy="2.4345E-06" iyz="-1.607E-22" izz="3.307E-06" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="${mesh_path}/free__wheel_Link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="${free_wheel_color}" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="${mesh_path}/free__wheel_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="free__wheel_joint" type="fixed">
+    <origin xyz="0 -0.0625 0" rpy="0 0 0" />
+    <parent link="base_link" />
+    <child link="free__wheel_Link" />
+    <axis xyz="0 0 0" />
+  </joint>
+
+  <!-- Magnet Link -->
+  <link name="magnet_link">
+    <inertial>
+      <origin xyz="0.095281 -0.22134 0.010434" rpy="0 0 0" />
+      <mass value="0.015659" />
+      <inertia
+        ixx="1.5215E-06" ixy="-1.4889E-22" ixz="3.0905E-19"
+        iyy="1.5215E-06" iyz="-7.4322E-19" izz="2.2604E-06" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="${mesh_path}/magnet_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="${magnet_blue}" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="${mesh_path}/magnet_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="magnet_joint" type="fixed">
+    <origin xyz="0 -0.0625 0" rpy="-1.843 -0.38042 -3.0383" />
+    <parent link="base_link" />
+    <child link="magnet_link" />
+    <axis xyz="0 0 0" />
+  </joint>
+
+  <!-- Servo and Mechanism Links -->
+  <link name="servo_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0" />
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="${mesh_path}/servo_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="${black_color}" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="${mesh_path}/servo_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="servo_joint" type="fixed">
+    <origin xyz="-0.0696 -0.12507 0.115" rpy="3.1416 0 1.5708" />
+    <parent link="base_link" />
+    <child link="servo_link" />
+    <axis xyz="0 0 0" />
+  </joint>
+
+  <link name="mechanism_link">
+    <inertial>
+      <origin xyz="0.065755 -0.097216 9.6835E-05" rpy="0 0 0" />
+      <mass value="0.0060569" />
+      <inertia
+        ixx="4.7533E-06" ixy="1.9628E-19" ixz="1.6626E-18"
+        iyy="8.6182E-06" iyz="1.4991E-17" izz="1.3222E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="${mesh_path}/mechanism_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="${wooden_color}" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="${mesh_path}/mechanism_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="mechanism_joint" type="continuous">
+    <origin xyz="0.01 0 0" rpy="1.8231 0 1.5708" />
+    <parent link="servo_link" />
+    <child link="mechanism_link" />
+    <axis xyz="1 0 0" />
+  </joint>
 
 </robot>
